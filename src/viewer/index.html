@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>gum viewer</title>
+<style>
+  :root { color-scheme: light; --color-background-primary: #fff; --color-text-primary: #111; --err: #b00020; --muted: #666; }
+  :root[data-theme="dark"] { color-scheme: dark; --color-background-primary: #1a1a1a; --color-text-primary: #eee; --err: #ff6b7a; --muted: #aaa; }
+  html, body { margin: 0; padding: 0; position: relative; background: var(--color-background-primary); color: var(--color-text-primary); font-family: system-ui, sans-serif; }
+  html { scrollbar-width: none; }
+  html::-webkit-scrollbar { display: none; }
+  #root { width: 100%; }
+  #root svg { display: block; width: 100%; height: auto; }
+  #status { padding: 0.75rem 1rem; font-size: 0.9rem; color: var(--muted); white-space: pre-wrap; }
+  #status[data-kind="error"] { color: var(--err); font-family: ui-monospace, monospace; }
+  #export { position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.25rem; opacity: 0; transition: opacity 0.15s ease; }
+  body:hover #export, #export:focus-within { opacity: 1; }
+  @media (hover: none) { #export { opacity: 1; } }
+  #export button { font: inherit; font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.2rem 0.45rem; color: var(--muted); background: var(--color-background-primary); cursor: pointer; border: 1px solid currentColor; border-radius: 0.25rem; opacity: 0.75; }
+  #export button:hover { color: var(--color-text-primary); opacity: 1; }
+  #export button:disabled { cursor: default; opacity: 0.4; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div id="status">Loading…</div>
+<div id="root"></div>
+<div id="export" hidden>
+  <button data-format="jsx" title="Download the gum.jsx source">JSX</button>
+  <button data-format="svg" title="Download the figure as SVG">SVG</button>
+  <button data-format="png" title="Download the figure as PNG">PNG</button>
+</div>
+<script type="module">__VIEWER_JS__</script>
+</body>
+</html>

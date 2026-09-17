@@ -1,0 +1,24 @@
+{
+  "name": "@gum-jsx/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bun src/build.ts",
+    "start": "bun src/server.ts",
+    "dev": "bun run build && PUBLIC_URL=http://localhost:8787 bun --watch src/server.ts",
+    "typecheck": "bun tsc --noEmit"
+  },
+  "dependencies": {
+    "@gum-jsx/core": "workspace:*",
+    "@gum-jsx/docs": "workspace:*",
+    "@gum-jsx/math": "workspace:*",
+    "@modelcontextprotocol/ext-apps": "^1.7.5",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^7"
+  }
+}

@@ -1,0 +1,4 @@
+# Caddy config for gum-mcp, installed at /etc/caddy/Caddyfile.
+dev.compendiumlabs.ai {
+    reverse_proxy localhost:8787
+}

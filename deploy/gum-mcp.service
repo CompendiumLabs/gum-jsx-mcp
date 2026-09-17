@@ -1,0 +1,17 @@
+[Unit]
+Description=gum MCP server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=doug
+Group=doug
+WorkingDirectory=/media/genesis/mlai/gum-jsx/gum-jsx-mcp
+Environment=PORT=8787
+Environment=PUBLIC_URL=https://dev.compendiumlabs.ai
+ExecStart=/usr/bin/bun src/server.ts
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

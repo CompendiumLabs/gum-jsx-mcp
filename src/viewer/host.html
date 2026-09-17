@@ -1,0 +1,137 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>gum viewer harness</title>
+<style>
+  :root { color-scheme: light dark; --line: #8886; --muted: #888; }
+  body { margin: 0; padding: 1rem; font: 14px system-ui, sans-serif; display: grid; gap: 1rem; grid-template-columns: minmax(20rem, 26rem) 1fr; align-items: start; }
+  @media (max-width: 60rem) { body { grid-template-columns: 1fr; } }
+  fieldset { border: 1px solid var(--line); border-radius: 0.4rem; margin: 0 0 0.75rem; padding: 0.6rem 0.75rem; }
+  legend { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  label { display: inline-flex; align-items: center; gap: 0.35rem; }
+  textarea { width: 100%; box-sizing: border-box; height: 14rem; font: 12px ui-monospace, monospace; border: 1px solid var(--line); border-radius: 0.3rem; padding: 0.4rem; resize: vertical; }
+  .row { display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; align-items: center; margin-top: 0.5rem; }
+  button { font: inherit; padding: 0.25rem 0.6rem; border: 1px solid var(--line); border-radius: 0.3rem; background: transparent; color: inherit; cursor: pointer; }
+  button.go { font-weight: 600; }
+  input[type="number"] { width: 5rem; }
+  #frame { width: 100%; border: 1px solid var(--line); border-radius: 0.4rem; overflow: hidden; }
+  #frame iframe { display: block; width: 100%; height: 8rem; border: 0; }
+  #files:empty::after, #log:empty::after { content: '(nothing yet)'; color: var(--muted); }
+  #files a { display: block; font: 12px ui-monospace, monospace; margin: 0.15rem 0; }
+  #log { font: 11px ui-monospace, monospace; white-space: pre-wrap; max-height: 16rem; overflow-y: auto; margin: 0; }
+</style>
+</head>
+<body>
+<div>
+  <fieldset>
+    <legend>figure</legend>
+    <textarea id="code" spellcheck="false"></textarea>
+    <div class="row">
+      <label>size <input id="size" type="number" value="1000" min="100" step="100"></label>
+      <label>theme <select id="theme"><option value="light">light</option><option value="dark">dark</option></select></label>
+      <button class="go" id="render">Render</button>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>host</legend>
+    <div class="row">
+      <label><input id="can-download" type="checkbox" checked> offer <code>downloadFile</code></label>
+      <label><input id="block-blob" type="checkbox"> block <code>blob:</code> urls</label>
+      <button id="reload">Reload frame</button>
+    </div>
+  </fieldset>
+  <fieldset><legend>downloads</legend><div id="files"></div></fieldset>
+  <fieldset><legend>bridge <button id="clear" style="float:right;font-size:.75rem">clear</button></legend><pre id="log"></pre></fieldset>
+</div>
+<div id="frame"><iframe id="app" src="viewer.html"></iframe></div>
+
+<script type="module">
+const DEFAULT_CODE = `<Svg font-size={px(24)}>
+  <Frame padding={em(1)} radius={em(0.4)}>
+    <VStack gap={em(0.6)} align="center">
+      <Latex>{'\\\\int_0^1 x^2 dx = \\\\frac{1}{3}'}</Latex>
+      <Circle width={em(4)} fill={blue} stroke={none} />
+    </VStack>
+  </Frame>
+</Svg>`
+
+const $ = id => document.getElementById(id)
+const frame = $('app')
+const files = $('files')
+$('code').value = DEFAULT_CODE
+
+function say(text) {
+  const line = document.createElement('div')
+  line.textContent = `${new Date().toLocaleTimeString()}  ${text}`
+  $('log').append(line)
+  $('log').scrollTop = $('log').scrollHeight
+}
+function send(message) { frame.contentWindow.postMessage({ jsonrpc: '2.0', ...message }, '*') }
+function notify(method, params = {}) { send({ method, params }) }
+function renderArgs() { return { code: $('code').value, size: Number($('size').value) } }
+function callTool() {
+  const args = renderArgs()
+  notify('ui/notifications/tool-input', { toolName: 'render', arguments: args })
+  notify('ui/notifications/tool-result', { toolName: 'render', structuredContent: args })
+  say(`tool-input + tool-result  size=${args.size}`)
+}
+
+$('render').addEventListener('click', callTool)
+$('theme').addEventListener('change', () => {
+  notify('ui/notifications/host-context-changed', { theme: $('theme').value })
+  say(`host-context-changed  theme=${$('theme').value}`)
+})
+$('clear').addEventListener('click', () => $('log').replaceChildren())
+$('reload').addEventListener('click', () => frame.contentWindow.location.reload())
+
+async function receiveFile(resource) {
+  const blob = resource.text != null
+    ? new Blob([resource.text], { type: resource.mimeType })
+    : await (await fetch(`data:${resource.mimeType};base64,${resource.blob}`)).blob()
+  const name = resource.uri.split('/').pop()
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.download = name
+  link.textContent = `${name}  ${resource.mimeType}  ${(blob.size / 1024).toFixed(1)} kB`
+  files.prepend(link)
+  say(`download-file  ${name} (${blob.size} bytes)`)
+}
+
+window.addEventListener('message', async event => {
+  const message = event.data
+  if (event.source !== frame.contentWindow || message?.jsonrpc !== '2.0') return
+  switch (message.method) {
+    case 'ui/initialize':
+      send({ id: message.id, result: {
+        protocolVersion: message.params.protocolVersion,
+        hostInfo: { name: 'gum-harness', version: '0' },
+        hostCapabilities: $('can-download').checked ? { downloadFile: {} } : {},
+        hostContext: { theme: $('theme').value, displayMode: 'inline' },
+      } })
+      say(`initialize  app=${message.params.appInfo?.name}`)
+      break
+    case 'ui/notifications/initialized': callTool(); break
+    case 'ui/notifications/size-changed':
+      frame.style.height = `${message.params.height}px`
+      say(`size-changed  ${message.params.width}x${message.params.height}`)
+      break
+    case 'ui/download-file':
+      for (const item of message.params.contents) if (item.type === 'resource') await receiveFile(item.resource)
+      send({ id: message.id, result: {} })
+      break
+    default:
+      if (message.id != null) send({ id: message.id, result: {} })
+  }
+})
+
+frame.addEventListener('load', () => {
+  if ($('block-blob').checked) {
+    frame.contentWindow.URL.createObjectURL = () => { throw new Error('blob: blocked by harness') }
+    say('blob: urls are blocked in the frame')
+  }
+})
+</script>
+</body>
+</html>
