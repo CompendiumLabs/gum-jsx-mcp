@@ -3,6 +3,7 @@
 import { App, applyHostStyleVariables } from '@modelcontextprotocol/ext-apps'
 import type { McpUiHostContext, McpUiTheme } from '@modelcontextprotocol/ext-apps'
 import {
+  EMOJI_FAMILY,
   evaluate,
   exact,
   make_request,
@@ -40,6 +41,10 @@ for (const family of ['Sans', 'Mono']) {
     ), { weight })
   }
 }
+// The emoji metrics face is bundled the same way. Figures name its family on live
+// emoji text, which this document paints with the viewer's own emoji font.
+fonts.register_url(EMOJI_FAMILY, new URL(`${FONT_BASE}/fonts/NotoColorEmoji-Metrics.ttf`, location.href),
+  { fallback: true })
 let fontsReady: Promise<void> | undefined
 
 function loadFonts(): Promise<void> {
