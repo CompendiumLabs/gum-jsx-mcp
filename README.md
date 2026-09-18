@@ -56,8 +56,7 @@ The viewer follows the same pipeline as the current CLI and editor:
 
 1. Evaluate JSX with core and math bindings.
 2. Load the core and KaTeX font resources.
-3. Lay out the element tree at the requested width with `LayoutPass`.
-4. Serialize the resulting fragment with `render_svg`.
+3. Wrap, lay out at the requested width, and serialize with `render_element`.
 
 The app follows host theme changes and offers JSX, SVG, and 2x PNG downloads. Current Gum SVG text is emitted as glyph paths, so downloaded SVG and PNG output do not depend on fonts installed on the receiving system.
 

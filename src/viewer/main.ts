@@ -3,12 +3,10 @@
 import { App, applyHostStyleVariables } from '@modelcontextprotocol/ext-apps'
 import type { McpUiHostContext, McpUiTheme } from '@modelcontextprotocol/ext-apps'
 import {
-  LayoutPass,
-  Svg,
   evaluate,
   exact,
   make_request,
-  render_svg,
+  render_element,
 } from '@gum-jsx/core'
 import * as math from '@gum-jsx/math'
 
@@ -78,16 +76,19 @@ async function renderFigure(
   background?: string,
 ): Promise<RenderedFigure> {
   await loadFonts()
-  const element = evaluate(code, { name: 'mcp.jsx', scope: math })
-  const viewport = element instanceof Svg ? element : new Svg({ children: element })
-  const figure = new Svg(viewport.type, { ...viewport.props, theme })
-  const pass = new LayoutPass({ fonts: { value: fonts, version: fonts.version } })
-  const fragment = pass.layout(figure, make_request({ width: exact(size) }))
-  return {
-    markup: render_svg(fragment, { background, id_prefix: 'gum-mcp' }),
-    width: fragment.size.width,
-    height: fragment.size.height,
+  const value = evaluate(code, { name: 'mcp.jsx', scope: math })
+  // The host theme wins over a source theme so the figure follows the surrounding UI.
+  const result = render_element(value, {
+    request: make_request({ width: exact(size) }),
+    overrides: { theme },
+    background,
+    id_prefix: 'gum-mcp',
+    fonts,
+  })
+  if (result.kind === 'value') {
+    throw new Error(`Source returned a value instead of an element: ${JSON.stringify(result.value) ?? String(result.value)}`)
   }
+  return { markup: result.svg, width: result.size.width, height: result.size.height }
 }
 
 async function render(args: RenderArgs): Promise<void> {

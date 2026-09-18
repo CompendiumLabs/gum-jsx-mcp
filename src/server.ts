@@ -10,10 +10,9 @@ import {
   RESOURCE_MIME_TYPE,
 } from '@modelcontextprotocol/ext-apps/server'
 import {
-  LayoutPass,
-  Svg,
   evaluate,
   exact,
+  layout_element,
   make_request,
 } from '@gum-jsx/core'
 import * as math from '@gum-jsx/math'
@@ -43,11 +42,14 @@ const VIEWER_HTML = (await viewerFile.text()).replaceAll(FONT_BASE, PUBLIC_BASE)
 // Local font URLs load synchronously through the core font provider.
 function checkCode(code: string, size: number): string | null {
   try {
-    const element = evaluate(code, { name: 'mcp.jsx', scope: math })
-    const viewport = element instanceof Svg ? element : new Svg({ children: element })
-    const fonts = math.createMathFonts()
-    const pass = new LayoutPass({ fonts: { value: fonts, version: fonts.version } })
-    pass.layout(viewport, make_request({ width: exact(size) }))
+    const value = evaluate(code, { name: 'mcp.jsx', scope: math })
+    const result = layout_element(value, {
+      request: make_request({ width: exact(size) }),
+      fonts: math.createMathFonts(),
+    })
+    if (result.kind === 'value') {
+      return `Source returned a value instead of an element: ${JSON.stringify(result.value) ?? String(result.value)}`
+    }
     return null
   } catch (error) {
     return error instanceof Error ? error.message : String(error)
