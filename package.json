@@ -7,7 +7,8 @@
     "build": "bun src/build.ts",
     "start": "bun src/server.ts",
     "dev": "bun run build && PUBLIC_URL=http://localhost:8787 bun --watch src/server.ts",
-    "typecheck": "bun tsc --noEmit"
+    "typecheck": "bun tsc --noEmit",
+    "test": "bun test --pass-with-no-tests"
   },
   "dependencies": {
     "@gum-jsx/core": "workspace:*",

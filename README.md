@@ -35,6 +35,9 @@ PUBLIC_URL=http://localhost:8787 bun run start
 
 Open `http://localhost:8787/host.html` for the local viewer harness, or connect an MCP host to `http://localhost:8787/mcp`.
 
+Run `bun run typecheck` to check TypeScript. `bun run test` currently succeeds with
+no tests; add future tests under `test/`.
+
 | Variable | Meaning | Default |
 |---|---|---|
 | `PORT` | HTTP listen port | `8787` |
