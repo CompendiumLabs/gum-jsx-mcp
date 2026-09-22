@@ -2,18 +2,12 @@
 
 import { App, applyHostStyleVariables } from '@modelcontextprotocol/ext-apps'
 import type { McpUiHostContext, McpUiTheme } from '@modelcontextprotocol/ext-apps'
-import {
-  EMOJI_FAMILY,
-  evaluate,
-  exact,
-  make_request,
-  render_element,
-} from '@gum-jsx/core'
+import { EMOJI_FAMILY } from '@gum-jsx/core'
 import * as math from '@gum-jsx/math'
+import { DEFAULT_SIZE, renderFigure as renderGumFigure } from '../render'
 
 declare const __GUM_MCP_VERSION__: string
 
-const DEFAULT_SIZE = 1000
 const WHITE = '#ffffff'
 const FONT_BASE = '__GUM_FONT_BASE__'
 
@@ -62,11 +56,34 @@ let hostTheme: McpUiTheme = matchMedia('(prefers-color-scheme: dark)').matches ?
 let lastArgs: RenderArgs | null = null
 let lastFigure: RenderedFigure | null = null
 let host: App | null = null
+let resizePending = false
+let reportedSize = ''
+
+function reportSize(): void {
+  if (host == null || resizePending) return
+  resizePending = true
+  requestAnimationFrame(() => {
+    resizePending = false
+    // Keep the requested width independent of the current iframe width so a
+    // small figure can be replaced by a larger one. Height follows the preview,
+    // which may be scaled down to fit the space the host actually provides.
+    const width = Math.ceil(lastFigure?.width ?? 320)
+    const height = Math.ceil(document.body.getBoundingClientRect().height)
+    const size = `${width}x${height}`
+    if (size === reportedSize) return
+    reportedSize = size
+    void host!.sendSizeChanged({ width, height }).catch(console.error)
+  })
+}
+
+new ResizeObserver(reportSize).observe(document.body)
 
 function setStatus(text: string, kind: 'info' | 'error' = 'info'): void {
   status.textContent = text
   status.dataset.kind = kind
   status.hidden = text === ''
+  document.body.style.width = `${lastFigure?.width ?? 320}px`
+  reportSize()
 }
 
 function applyTheme(theme: McpUiTheme): void {
@@ -81,19 +98,8 @@ async function renderFigure(
   background?: string,
 ): Promise<RenderedFigure> {
   await loadFonts()
-  const value = evaluate(code, { name: 'mcp.jsx', scope: math })
   // The host theme wins over a source theme so the figure follows the surrounding UI.
-  const result = render_element(value, {
-    request: make_request({ width: exact(size) }),
-    overrides: { theme },
-    background,
-    id_prefix: 'gum-mcp',
-    fonts,
-  })
-  if (result.kind === 'value') {
-    throw new Error(`Source returned a value instead of an element: ${JSON.stringify(result.value) ?? String(result.value)}`)
-  }
-  return { markup: result.svg, width: result.size.width, height: result.size.height }
+  return renderGumFigure(code, { size, theme, background, fonts })
 }
 
 async function render(args: RenderArgs): Promise<void> {
@@ -228,7 +234,7 @@ exports.addEventListener('click', event => {
 })
 
 async function connectMcpApp(): Promise<void> {
-  const app = new App({ name: 'gum-viewer', version: __GUM_MCP_VERSION__ }, {}, { autoResize: true })
+  const app = new App({ name: 'gum-viewer', version: __GUM_MCP_VERSION__ }, {}, { autoResize: false })
 
   app.ontoolinput = ({ arguments: args }) => {
     void render((args ?? {}) as RenderArgs)
@@ -258,6 +264,7 @@ async function connectMcpApp(): Promise<void> {
   await app.connect()
   host = app
   syncHost(app.getHostContext())
+  reportSize()
 }
 
 interface OpenAiGlobals {

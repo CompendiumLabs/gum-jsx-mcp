@@ -6,8 +6,8 @@
 <title>gum viewer harness</title>
 <style>
   :root { color-scheme: light dark; --line: #8886; --muted: #888; }
-  body { margin: 0; padding: 1rem; font: 14px system-ui, sans-serif; display: grid; gap: 1rem; grid-template-columns: minmax(20rem, 26rem) 1fr; align-items: start; }
-  @media (max-width: 60rem) { body { grid-template-columns: 1fr; } }
+  body { margin: 0; padding: 1rem; font: 14px system-ui, sans-serif; display: grid; gap: 1rem; grid-template-columns: minmax(20rem, 26rem) minmax(0, 1fr); align-items: start; }
+  @media (max-width: 60rem) { body { grid-template-columns: minmax(0, 1fr); } }
   fieldset { border: 1px solid var(--line); border-radius: 0.4rem; margin: 0 0 0.75rem; padding: 0.6rem 0.75rem; }
   legend { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
   label { display: inline-flex; align-items: center; gap: 0.35rem; }
@@ -16,7 +16,7 @@
   button { font: inherit; padding: 0.25rem 0.6rem; border: 1px solid var(--line); border-radius: 0.3rem; background: transparent; color: inherit; cursor: pointer; }
   button.go { font-weight: 600; }
   input[type="number"] { width: 5rem; }
-  #frame { width: 100%; border: 1px solid var(--line); border-radius: 0.4rem; overflow: hidden; }
+  #frame { width: 320px; max-width: 100%; box-sizing: border-box; border: 1px solid var(--line); border-radius: 0.4rem; overflow: hidden; }
   #frame iframe { display: block; width: 100%; height: 8rem; border: 0; }
   #files:empty::after, #log:empty::after { content: '(nothing yet)'; color: var(--muted); }
   #files a { display: block; font: 12px ui-monospace, monospace; margin: 0.15rem 0; }
@@ -114,7 +114,8 @@ window.addEventListener('message', async event => {
       break
     case 'ui/notifications/initialized': callTool(); break
     case 'ui/notifications/size-changed':
-      frame.style.height = `${message.params.height}px`
+      if (message.params.width != null) $('frame').style.width = `${message.params.width + 2}px`
+      if (message.params.height != null) frame.style.height = `${message.params.height}px`
       say(`size-changed  ${message.params.width}x${message.params.height}`)
       break
     case 'ui/download-file':

@@ -6,6 +6,7 @@ import { copyFile, mkdir, readdir, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import pkg from '../package.json'
+import { buildSkills } from '../scripts/skill'
 
 const ROOT = join(import.meta.dir, '..')
 const DIST = join(ROOT, 'dist')
@@ -47,6 +48,7 @@ async function build(): Promise<void> {
 
   const fonts = (await readdir(fontDir)).filter(name => name.endsWith('.ttf')).length
   console.log(`built dist/viewer.html (${(html.length / 1024).toFixed(0)} KB) and ${fonts} font files`)
+  buildSkills()
 }
 
 await build()

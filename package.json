@@ -5,15 +5,18 @@
   "type": "module",
   "scripts": {
     "build": "bun src/build.ts",
+    "skill": "bun scripts/skill.ts",
     "start": "bun src/server.ts",
-    "dev": "bun run build && PUBLIC_URL=http://localhost:8787 bun --watch src/server.ts",
+    "dev": "bun run build && PUBLIC_URL=${PUBLIC_URL:-http://localhost:8787} bun --watch src/server.ts",
     "typecheck": "bun tsc --noEmit",
-    "test": "bun test --pass-with-no-tests"
+    "test": "bun test ./test",
+    "verify": "bun test/verify.ts"
   },
   "dependencies": {
     "@gum-jsx/core": "workspace:*",
     "@gum-jsx/docs": "workspace:*",
     "@gum-jsx/math": "workspace:*",
+    "@gum-jsx/png": "workspace:*",
     "@modelcontextprotocol/ext-apps": "^1.7.5",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "zod": "^4.5.4"
