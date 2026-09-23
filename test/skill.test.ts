@@ -20,7 +20,9 @@ function links(markdown: string): string[] {
 
 test('MCP shares the portable authoring examples without its shell workflow', () => {
   const portable = buildSkillFiles().get('SKILL.md')!
-  expect(examples(INSTRUCTIONS)).toEqual(examples(portable))
+  // CLI-only deck/prelude examples are excluded along with the shell workflow.
+  const shared = buildSkillFiles({ cli: false }).get('SKILL.md')!
+  expect(examples(INSTRUCTIONS)).toEqual(examples(shared))
   expect(examples(INSTRUCTIONS).length).toBeGreaterThanOrEqual(3)
   expect(portable).toMatch(/^```sh\n/m)
   expect(INSTRUCTIONS).not.toMatch(/^```(?:sh|bash)\n/m)
