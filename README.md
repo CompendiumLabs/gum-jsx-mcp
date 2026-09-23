@@ -5,14 +5,13 @@ An MCP server that renders [gum.jsx](https://github.com/CompendiumLabs/gum-jsx-c
 The `rasterize` tool runs the full Gum-to-PNG pipeline on the server and returns an image for the model to inspect. After checking it, the model calls `render` with the same source and size to display the figure in an embedded MCP App. The viewer evaluates and renders the source in the host iframe; a successful tool response does not confirm browser display. `list_docs` and `read_docs` expose the maintained guides, element references, and gallery from `@gum-jsx/docs`.
 
 See the [Gum project](https://github.com/CompendiumLabs/gum-jsx#readme) for
-workspace setup and the package overview.
+getting started and the package overview.
 
 ## Running
 
 From the workspace root:
 
 ```bash
-bun install
 bun --filter @gum-jsx/mcp build
 PUBLIC_URL=http://localhost:8787 bun --filter @gum-jsx/mcp start
 ```
