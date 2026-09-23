@@ -7,8 +7,10 @@ import { registerViewer, viewerUri } from './viewer-resource'
 import { loadSkillDocs } from './skill'
 import { registerDocs } from './docs-tools'
 import { registerRenderTool } from './render-tool'
+import { withRequestLogging } from './request-logging'
 import pkg from '../package.json'
 
+const DEBUG = process.argv.slice(2).includes('--debug')
 const PORT = Number(process.env.PORT ?? 8787)
 const PUBLIC_URL = new URL(process.env.PUBLIC_URL ?? 'https://compendiumlabs.ai')
 const PUBLIC_BASE = PUBLIC_URL.href.replace(/\/$/, '')
@@ -116,11 +118,12 @@ async function handle(request: Request): Promise<Response> {
   return new Response('Not found', { status: 404 })
 }
 
+const fetchRequest = async (request: Request) => withCors(await handle(request))
 const httpServer = Bun.serve({
   hostname: process.env.HOST ?? '0.0.0.0',
   port: PORT,
   idleTimeout: 255,
-  fetch: async request => withCors(await handle(request)),
+  fetch: DEBUG ? withRequestLogging(fetchRequest) : fetchRequest,
 })
 
 console.log(`gum-mcp ${pkg.version} listening on http://localhost:${httpServer.port} (public: ${PUBLIC_BASE})`)

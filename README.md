@@ -1,27 +1,11 @@
-# gum-jsx-mcp
+# @gum-jsx/mcp
 
 An MCP server that renders [gum.jsx](https://github.com/CompendiumLabs/gum-jsx-core) figures inside hosts that support [MCP Apps](https://modelcontextprotocol.io/extensions/apps/overview).
 
 The `rasterize` tool runs the full Gum-to-PNG pipeline on the server and returns an image for the model to inspect. After checking it, the model calls `render` with the same source and size to display the figure in an embedded MCP App. The viewer evaluates and renders the source in the host iframe; a successful tool response does not confirm browser display. `list_docs` and `read_docs` expose the maintained guides, element references, and gallery from `@gum-jsx/docs`.
 
-## Layout
-
-```text
-src/server.ts        Bun HTTP server, MCP endpoint, fonts, and health route
-scripts/skill.ts     Generates inspectable instructions, references, and docs snapshot
-scripts/skill-source.ts Shared prompt and docs assembly from @gum-jsx/docs
-src/skill.ts         Loads generated instructions and docs at startup
-src/docs-tools.ts   list_docs/read_docs registration
-src/render-tool.ts   PNG inspection and client display tools
-src/render.ts        Shared figure layout for validation, previews, and downloads
-prompt/mcp.md        MCP-specific generation instructions
-test/skill.test.ts   Shared prompt, docs links, lookup, and example rendering checks
-test/docs-tools.test.ts Documentation tool protocol checks
-src/viewer/main.ts   Embedded app: evaluates, lays out, and exports figures
-src/viewer/index.html
-src/viewer/host.html Stand-in host for local viewer development
-src/build.ts         Builds the viewer, fonts, and skill snapshot into dist/
-```
+See the [Gum project](https://github.com/CompendiumLabs/gum-jsx#readme) for
+workspace setup and the package overview.
 
 ## Running
 
@@ -40,13 +24,21 @@ bun run build
 PUBLIC_URL=http://localhost:8787 bun run start
 ```
 
-For development through the public reverse proxy, use:
+For development, rebuild the viewer and watch the server:
 
-```bash
-PUBLIC_URL=https://dev.compendiumlabs.ai bun run dev
+```sh
+bun run dev
 ```
 
+Set `PUBLIC_URL` to your browser-visible origin when using a reverse proxy.
+
 `dev` respects `PUBLIC_URL` and defaults to `http://localhost:8787` when unset.
+Add `--debug` to either command (`bun run start --debug` or `bun run dev --debug`)
+to write JSON request logs to stderr. Logs include timestamps, request IDs, HTTP
+methods and paths, full request bodies (including MCP methods and tool arguments),
+response status, and elapsed milliseconds until the response is ready. Streaming
+response bodies are not buffered or logged. Request logging is off by default.
+
 The public URL must be reachable from the client's browser: it sets the viewer's
 font URLs and CSP, even when MCP tool calls go through a working reverse proxy.
 Check `/health` to confirm the running process advertises the intended URL.
@@ -135,7 +127,7 @@ an explicit `Svg` width for a fixed viewport. The preview scales large figures
 down to the available display width. Downloads retain the figure's SVG dimensions
 (twice those dimensions for the 2× PNG), without padding to the browser width.
 
-The app follows host theme changes and offers JSX, SVG, and 2x PNG downloads. Current Gum SVG text is emitted as glyph paths, so downloaded SVG and PNG output do not depend on fonts installed on the receiving system.
+The app follows host theme changes and offers JSX, SVG, and 2x PNG downloads. Ordinary text is emitted as glyph paths. Emoji remain live SVG text, so their display depends on the viewer or rasterizer's available fonts.
 
 The app resource URI includes a hash of the viewer HTML so updated bundles have
 a distinct cache identity. Older viewer URIs remain readable for clients with
@@ -146,3 +138,22 @@ The app resource declares the public origin in both MCP Apps and OpenAI-compatib
 ## Deployment
 
 `deploy/` contains the existing Caddy reverse-proxy configuration and systemd unit. Build `dist/` before starting the service.
+
+## Source layout
+
+```text
+src/server.ts        Bun HTTP server, MCP endpoint, fonts, and health route
+scripts/skill.ts     Generates inspectable instructions, references, and docs snapshot
+scripts/skill-source.ts Shared prompt and docs assembly from @gum-jsx/docs
+src/skill.ts         Loads generated instructions and docs at startup
+src/docs-tools.ts   list_docs/read_docs registration
+src/render-tool.ts   PNG inspection and client display tools
+src/render.ts        Shared figure layout for validation, previews, and downloads
+prompt/mcp.md        MCP-specific generation instructions
+test/skill.test.ts   Shared prompt, docs links, lookup, and example rendering checks
+test/docs-tools.test.ts Documentation tool protocol checks
+src/viewer/main.ts   Embedded app: evaluates, lays out, and exports figures
+src/viewer/index.html
+src/viewer/host.html Stand-in host for local viewer development
+src/build.ts         Builds the viewer, fonts, and skill snapshot into dist/
+```
