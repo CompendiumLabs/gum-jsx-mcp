@@ -13,10 +13,10 @@
     "verify": "bun test/verify.ts"
   },
   "dependencies": {
-    "@gum-jsx/core": "workspace:*",
-    "@gum-jsx/docs": "workspace:*",
-    "@gum-jsx/math": "workspace:*",
-    "@gum-jsx/png": "workspace:*",
+    "@gum-jsx/core": "2.0.0-beta.1",
+    "@gum-jsx/docs": "2.0.0-beta.1",
+    "@gum-jsx/math": "2.0.0-beta.1",
+    "@gum-jsx/png": "2.0.0-beta.1",
     "@modelcontextprotocol/ext-apps": "^1.7.5",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "zod": "^4.5.4"
