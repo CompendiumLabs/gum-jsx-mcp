@@ -12,7 +12,7 @@ import pkg from '../package.json'
 
 const DEBUG = process.argv.slice(2).includes('--debug')
 const PORT = Number(process.env.PORT ?? 8787)
-const PUBLIC_URL = new URL(process.env.PUBLIC_URL ?? 'https://compendiumlabs.ai')
+const PUBLIC_URL = new URL(process.env.PUBLIC_URL ?? 'https:/dev.compendiumlabs.ai')
 const PUBLIC_BASE = PUBLIC_URL.href.replace(/\/$/, '')
 const PUBLIC_PATH = PUBLIC_URL.pathname.replace(/\/$/, '')
 const PUBLIC_ORIGIN = PUBLIC_URL.origin
