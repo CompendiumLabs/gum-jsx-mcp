@@ -2,9 +2,10 @@
 
 Use `list_docs` to find guide, element, category, and gallery names, then
 `read_docs` for the pages relevant to the figure. References use file-based
-links: `references/guides/Style.md` means `read_docs("Style")`, and
-`references/elements/Plot.md#example` means `read_docs("Plot")` (ignore the
-fragment). `Math` is the authoring guide; `math` is the element category.
+links: `references/guides/style.md` means `read_docs("guides/style")`, and
+`references/elements/plotting.md#Plot` means `read_docs("elements/Plot")`.
+Use `guides/math` for the math authoring guide and `elements/math` for the
+element category.
 Documentation is accessed through these tools; the file paths identify pages.
 
 Always call `rasterize` with the complete JSX source in `code` before displaying

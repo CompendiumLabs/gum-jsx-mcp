@@ -46,16 +46,19 @@ test('shared instruction examples render through the MCP figure pipeline', () =>
 
 test('docs tools expose every current page and unmodified example', () => {
   const index = listDocs()
-  for (const collection of [getElements(), getGuides(), getGallery()]) {
+  for (const [kind, collection] of [
+    ['elements', getElements()], ['guides', getGuides()], ['gallery', getGallery()],
+  ] as const) {
     for (const name of collection.tags) {
-      expect(index).toContain(name)
-      const page = readDocs(name)
-      expect(page).toBe(refs_pages[name])
+      const lookup = `${kind}/${name}`
+      expect(index).toContain(lookup)
+      const page = readDocs(lookup)
+      expect(page).toBe(refs_pages[lookup])
       expect(page).toContain('```jsx\n' + collection.code[name] + '\n```')
     }
   }
   for (const [category, names] of Object.entries(getElements().cats)) {
-    for (const name of names) expect(readDocs(category)).toContain(readDocs(name)!)
+    for (const name of names) expect(readDocs(`elements/${category}`)).toContain(`<a id="${name}"></a>`)
   }
   for (const name of ['elements', 'guides', 'gallery']) {
     expect(index).toContain(name)
@@ -71,24 +74,25 @@ test('file-based instruction and tool links identify readable docs pages', () =>
       const [path, hash] = target.split('#')
       expect(path).toStartWith('references/')
       const name = posix.basename(path, '.md')
-      const destination = readDocs(name)
+      const kind = path.split('/')[1]
+      const lookup = kind && path.split('/').length === 3 ? `${kind}/${name}` : name
+      const destination = readDocs(lookup)
       expect(destination).not.toBeNull()
       expect(readFileSync(join(output, 'gum-jsx', path), 'utf8')).toBeTruthy()
       if (hash === 'example') expect(destination).toContain('\n## Example\n')
     }
   }
-  expect(links(INSTRUCTIONS)).toContain('references/elements/Plot.md')
-  expect(links(readDocs('guides')!)).toContain('references/guides/Style.md')
-  expect(links(readDocs('transformer')!)).toContain('references/gallery/transformer.md#example')
+  expect(links(INSTRUCTIONS)).toContain('references/elements/plotting.md#Plot')
+  expect(links(readDocs('guides')!)).toContain('references/guides/style.md')
+  expect(links(readDocs('gallery/transformer')!)).toContain('references/gallery/networks.md#transformer-example')
 })
 
-test('doc lookup preserves Math/math distinctions and rejects unknown names', () => {
-  expect(readDocs('Math')).not.toBe(readDocs('math'))
-  expect(readDocs('Math')).toContain('# Math authoring')
-  expect(readDocs('math')).toContain('# Math Elements')
-  expect(readDocs('  fitting  ')).toBe(readDocs('Fitting'))
-  expect(readDocs('PLOT')).toBe(readDocs('Plot'))
-  for (const name of ['', 'missing-page', 'constructor', '__proto__', 'toString']) {
+test('doc lookup uses current collection names and rejects unknown names', () => {
+  expect(readDocs('guides/math')).toContain('# Math authoring')
+  expect(readDocs('elements/math')).toContain('# Math elements')
+  expect(readDocs('  guides/fitting  ')).toBe(readDocs('guides/fitting'))
+  for (const name of ['', 'missing-page', 'Style', 'style', 'Plot', 'math', 'elements/PLOT',
+    'constructor', '__proto__', 'toString']) {
     expect(readDocs(name)).toBeNull()
   }
 })

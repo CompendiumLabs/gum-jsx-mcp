@@ -14,7 +14,7 @@ export function registerDocs(server: McpServer, { listDocs, readDocs }: ReturnTy
     title: 'Read gum.jsx documentation',
     description: 'Read an element section, individual element, guide, or gallery example by the name shown by list_docs.',
     inputSchema: {
-      name: z.string().describe('Element section, element, guide, or gallery example name.'),
+      name: z.string().describe('Exact name from list_docs, such as guides/style or elements/Plot.'),
     },
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   }, async ({ name }) => {

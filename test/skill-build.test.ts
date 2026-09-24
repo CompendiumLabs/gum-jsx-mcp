@@ -37,13 +37,13 @@ test('runtime loads only generated instructions and docs, retaining the startup 
   rmSync(join(output, 'gum-jsx'), { recursive: true })
   expect(loadSkillDocs(output).INSTRUCTIONS).toBe(docs.INSTRUCTIONS)
   writeFileSync(join(output, 'instructions.md'), 'Generated instructions\n')
-  writeFileSync(join(output, 'docs.json'), JSON.stringify({ index: 'Generated index', pages: { Style: 'Generated style' } }))
+  writeFileSync(join(output, 'docs.json'), JSON.stringify({ index: 'Generated index', pages: { 'guides/style': 'Generated style' } }))
   const loaded = loadSkillDocs(output)
   expect(loaded.INSTRUCTIONS).toBe('Generated instructions')
   expect(loaded.listDocs()).toBe('Generated index')
-  expect(loaded.readDocs('Style')).toBe('Generated style')
+  expect(loaded.readDocs('guides/style')).toBe('Generated style')
   expect(docs.INSTRUCTIONS).not.toBe(loaded.INSTRUCTIONS)
-  expect(docs.readDocs('Style')).not.toBe(loaded.readDocs('Style'))
+  expect(docs.readDocs('guides/style')).not.toBe(loaded.readDocs('guides/style'))
 })
 
 test('missing or malformed generated snapshots fail with rebuild guidance', () => {

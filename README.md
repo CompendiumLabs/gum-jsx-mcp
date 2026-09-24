@@ -78,9 +78,10 @@ layout guidance, examples, and references stay shared with the portable skill.
 The MCP workflow uses `rasterize` to inspect figures and `render` to display them.
 
 All documentation access uses `list_docs` and `read_docs`. File-based references
-identify page names: `references/guides/Style.md` means `read_docs("Style")`, and
-`references/elements/Plot.md#example` means `read_docs("Plot")`. Exact names
-distinguish the `Math` guide from the `math` category. Individual pages, element
+identify page names: `references/guides/style.md` means `read_docs("guides/style")`,
+and `references/elements/plotting.md#Plot` means `read_docs("elements/Plot")`.
+Use `read_docs("guides/math")` for the math guide and
+`read_docs("elements/math")` for the element category. Individual pages, element
 categories, and the `elements`, `guides`, and `gallery` indexes are readable.
 
 Run `bun run skill` to precompile the documentation, or `bun run build` to build

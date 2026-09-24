@@ -7,26 +7,18 @@ import {
   getElements,
   getGallery,
   getGuides,
-  getSkillPrompt,
   mapSkillLinks,
+  promptDir,
 } from '@gum-jsx/docs'
 
 const LOCAL_PROMPT_DIR = join(import.meta.dir, '..', 'prompt')
-
-function capitalize(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1)
-}
 
 const elements = getElements()
 const guides = getGuides()
 const gallery = getGallery()
 const files = buildSkillFiles({ cli: false })
-const referenceNames = new Map([...files.keys()]
-  .filter(file => file.startsWith('references/'))
-  .map(file => [file, posix.basename(file, '.md')]))
-
 // Tool-returned links use paths relative to the generated SKILL.md. The
-// basename identifies the read_docs page; on-disk files keep relative links.
+// file and fragment identify the read_docs page; on-disk files keep relative links.
 function referenceLinks(markdown: string, file: string): string {
   return mapSkillLinks(markdown, target => {
     if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(target)) return target
@@ -37,19 +29,41 @@ function referenceLinks(markdown: string, file: string): string {
   })
 }
 
-// The same pages and examples back the local files and read_docs.
-// Keep individual and whole-category lookups available through read_docs.
-const refs_pages: Record<string, string> = Object.fromEntries(
-  [...referenceNames].map(([file, name]) => [name, referenceLinks(files.get(file)!, file)]),
-)
-for (const [category, names] of Object.entries(elements.cats)) {
-  const content = names.map(name => refs_pages[name]).join('\n\n')
-  refs_pages[category] = `# ${capitalize(category)} Elements\n\n${content}`
+// The portable skill groups elements and gallery entries by category. Extract
+// each anchored section so read_docs still supports individual names.
+function entry(file: string, name: string): string {
+  const markdown = files.get(file)
+  if (!markdown) throw new Error(`Missing MCP reference ${file}`)
+  const start = markdown.indexOf(`<a id="${name}"></a>`)
+  if (start < 0) throw new Error(`Missing ${name} in ${file}`)
+  const end = markdown.indexOf('\n\n---\n\n', start)
+  return referenceLinks(markdown.slice(start, end < 0 ? undefined : end).trim(), file)
 }
 
+const refs_pages: Record<string, string> = {}
+for (const name of ['elements', 'guides', 'gallery']) {
+  const file = `references/${name}.md`
+  refs_pages[name] = referenceLinks(files.get(file)!, file)
+}
+for (const name of guides.tags) {
+  const file = `references/guides/${name}.md`
+  refs_pages[`guides/${name}`] = referenceLinks(files.get(file)!, file)
+}
+for (const [category, names] of Object.entries(elements.cats)) {
+  const file = `references/elements/${category}.md`
+  refs_pages[`elements/${category}`] = referenceLinks(files.get(file)!, file)
+  for (const name of names) refs_pages[`elements/${name}`] = entry(file, name)
+}
+for (const [category, names] of Object.entries(gallery.cats)) {
+  const file = `references/gallery/${category}.md`
+  refs_pages[`gallery/${category}`] = referenceLinks(files.get(file)!, file)
+  for (const name of names) refs_pages[`gallery/${name}`] = entry(file, name)
+}
 const mcpPrompt = readFileSync(join(LOCAL_PROMPT_DIR, 'mcp.md'), 'utf8').trim()
+const head = readFileSync(join(promptDir, 'head.md'), 'utf8').trim()
+const packagedPrompt = files.get('SKILL.md')!.slice(head.length).trim()
 const INSTRUCTIONS = [
-  referenceLinks(getSkillPrompt(), 'SKILL.md').trim(),
+  referenceLinks(packagedPrompt, 'SKILL.md').trim(),
   mcpPrompt,
 ].join('\n\n')
 
@@ -73,14 +87,14 @@ function blurb(page: string): { title: string; summary: string } {
 
 function listDocs(): string {
   const sections = Object.entries(elements.cats)
-    .map(([category, names]) => `  ${category} — ${names.join(', ')}`)
+    .map(([category, names]) => `  elements/${category} — ${names.map(name => `elements/${name}`).join(', ')}`)
   const guidePages = guides.tags.map(name => {
     const { title, summary } = blurb(guides.text[name] ?? '')
-    return `  ${name} — ${title}: ${summary}`
+    return `  guides/${name} — ${title}: ${summary}`
   })
   const galleryPages = gallery.tags.map(name => {
     const { title, summary } = blurb(gallery.text[name] ?? '')
-    return `  ${name} — ${title}: ${summary}`
+    return `  gallery/${name} — ${title}: ${summary}`
   })
   return [
     'Indexes: elements, guides, gallery (also available through read_docs)',

@@ -27,7 +27,8 @@ test('documentation is available through tools without the Skills extension or d
     expect(resources.every(resource => resource.uri.startsWith('ui://gum/'))).toBe(true)
     const index = await client.callTool({ name: 'list_docs', arguments: {} })
     expect(index.content).toEqual([{ type: 'text', text: docs.listDocs() }])
-    for (const name of ['Style', 'Plot', 'Math', 'math', 'guides', 'transformer']) {
+    for (const name of ['guides/style', 'elements/Plot', 'guides/math',
+      'elements/math', 'guides', 'gallery/transformer']) {
       const result = await client.callTool({ name: 'read_docs', arguments: { name } })
       expect(result.isError).not.toBe(true)
       expect(result.content).toEqual([{ type: 'text', text: docs.readDocs(name)! }])
