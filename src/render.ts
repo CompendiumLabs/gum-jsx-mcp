@@ -2,9 +2,10 @@
 import { available, Evaluator, layout_element, make_request, render_svg } from '@gum-jsx/core'
 import type { FontProvider, ThemeName } from '@gum-jsx/core'
 import * as math from '@gum-jsx/math'
+import * as maps from '@gum-jsx/maps'
 
 const DEFAULT_SIZE = 1000
-const evaluator = new Evaluator({ scope: math, name: 'mcp.jsx' })
+const evaluator = new Evaluator({ scope: { ...math, ...maps }, name: 'mcp.jsx' })
 
 type FigureOptions = {
   size?: number
