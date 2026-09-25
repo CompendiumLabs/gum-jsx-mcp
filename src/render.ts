@@ -1,9 +1,10 @@
 // Shared geometry for server validation, the viewer, and downloaded figures.
-import { available, evaluate, layout_element, make_request, render_svg } from '@gum-jsx/core'
+import { available, Evaluator, layout_element, make_request, render_svg } from '@gum-jsx/core'
 import type { FontProvider, ThemeName } from '@gum-jsx/core'
 import * as math from '@gum-jsx/math'
 
 const DEFAULT_SIZE = 1000
+const evaluator = new Evaluator({ scope: math, name: 'mcp.jsx' })
 
 type FigureOptions = {
   size?: number
@@ -13,7 +14,7 @@ type FigureOptions = {
 }
 
 function layoutFigure(code: string, { size = DEFAULT_SIZE, fonts, theme }: FigureOptions) {
-  const value = evaluate(code, { name: 'mcp.jsx', scope: math })
+  const value = evaluator.evaluate(code)
   const result = layout_element(value, {
     // Supply a wrapping/flex budget without padding compact figures to that width
     // or overriding an authored Svg viewport. Height follows ordinary layout.
