@@ -14,7 +14,7 @@ export async function verifyTools(endpoint: string): Promise<void> {
     for (const name of ['list_docs', 'read_docs', 'rasterize', 'render']) {
       assert(tools.some(tool => tool.name === name), `Missing ${name}`)
     }
-    for (const [name, args] of [['list_docs', {}], ['read_docs', { name: 'Style' }]] as const) {
+    for (const [name, args] of [['list_docs', {}], ['read_docs', { name: 'guides/style' }]] as const) {
       const result = await client.callTool({ name, arguments: args })
       assert(!result.isError, `${name} failed`)
       const content = result.content as { type: string; text: string }[]
