@@ -63,9 +63,35 @@ test('scalar dash patterns and named font weights survive full rasterization', a
   })
 })
 
+test('named map coordinates and position spreads survive the MCP render boundary', async () => {
+  await withClient(async client => {
+    const code = `
+      const point = {lon: 30, lat: 20}
+      return <GeoMap source={world_countries({ids: []})} width={px(120)} height={px(80)}>
+        <Rect {...{pos: point}} width={px(4)} height={px(6)} />
+        <Points points={[point]} point-size={({lat}) => px(lat / 5)} />
+      </GeoMap>
+    `
+    const equivalent = code.replace('{lon: 30, lat: 20}', '[30, 20]')
+      .replace('point-size={({lat}) => px(lat / 5)}', 'point-size={px(4)}')
+    const named = await client.callTool({ name: 'rasterize', arguments: { code } })
+    const tuples = await client.callTool({ name: 'rasterize', arguments: { code: equivalent } })
+    expect(named.isError).not.toBe(true)
+    expect(tuples.isError).not.toBe(true)
+    const images = (result: typeof named) => (result.content as { type: string }[]).filter(item => item.type === 'image')
+    expect(images(named)).toHaveLength(1)
+    expect(images(named)).toEqual(images(tuples))
+    const display = await client.callTool({ name: 'render', arguments: { code } })
+    expect(display.isError).not.toBe(true)
+    expect(display.structuredContent).toEqual({ code, size: 1000 })
+  })
+})
+
 test('failed evaluations and layouts return errors without images or success messages', async () => {
   await withClient(async client => {
-    for (const code of ['return 42', '<MissingElement />', '<Rect stroke-dasharray={px(-1)} />']) {
+    for (const code of ['return 42', '<MissingElement />', '<Rect stroke-dasharray={px(-1)} />',
+      '<Rect {...{x: 0, y: 0}} />',
+      '<GeoMap source={world_countries()}><Points points={[{lon: 30, lat: 20, x: 30}]} /></GeoMap>']) {
       for (const name of ['rasterize', 'render']) {
         const result = await client.callTool({ name, arguments: { code } })
         expect(result.isError).toBe(true)
