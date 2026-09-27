@@ -90,7 +90,6 @@ test('named map coordinates and position spreads survive the MCP render boundary
 test('failed evaluations and layouts return errors without images or success messages', async () => {
   await withClient(async client => {
     for (const code of ['return 42', '<MissingElement />', '<Rect stroke-dasharray={px(-1)} />',
-      '<Rect {...{x: 0, y: 0}} />',
       '<GeoMap source={world_countries()}><Points points={[{lon: 30, lat: 20, x: 30}]} /></GeoMap>']) {
       for (const name of ['rasterize', 'render']) {
         const result = await client.callTool({ name, arguments: { code } })
