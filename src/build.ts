@@ -11,6 +11,8 @@ import { buildSkills } from '../scripts/skill'
 const ROOT = join(import.meta.dir, '..')
 const DIST = join(ROOT, 'dist')
 const FONT_BASE = '__GUM_FONT_BASE__'
+const freeze = process.env.GUM_FREEZE
+if (freeze !== undefined && freeze !== '0' && freeze !== '1') throw new Error('GUM_FREEZE must be 0 or 1')
 const CORE_FONT_DIR = fileURLToPath(new URL('./fonts/', import.meta.resolve('@gum-jsx/core')))
 
 async function build(): Promise<void> {
@@ -26,7 +28,10 @@ async function build(): Promise<void> {
     sourcemap: 'none',
     publicPath: `${FONT_BASE}/`,
     naming: { entry: 'viewer.js', asset: 'fonts/[name].[ext]' },
-    define: { __GUM_MCP_VERSION__: JSON.stringify(pkg.version) },
+    define: {
+      __GUM_MCP_VERSION__: JSON.stringify(pkg.version),
+      __GUM_FREEZE__: JSON.stringify(freeze === '1'),
+    },
   })
   if (!result.success) {
     for (const log of result.logs) console.error(log)
