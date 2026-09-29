@@ -115,9 +115,9 @@ revisions. Raster errors return `isError: true` with the cause. The PNG uses 2×
 resolution, a light root theme, and a white background, matching downloads.
 Rasterization passes the laid-out fragment to `@gum-jsx/png` and tiny-skia
 WebAssembly. Outlined text, math, shapes, and embedded PNGs need no native addons
-or install scripts. Figures containing live text or emoji use the optional
-`canvas` package and its host fonts; install it and allow its native install
-script to enable that fallback. Missing canvas produces an actionable tool error.
+or install scripts. Figures containing live text or emoji without outlines
+return an unsupported-input error. The SVG viewer can still display emoji when
+its browser has suitable fonts.
 
 The viewer follows the same pipeline as the current CLI and editor:
 

@@ -2,8 +2,7 @@ import { z } from 'zod'
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { registerAppTool } from '@modelcontextprotocol/ext-apps/server'
 import { createMathFonts } from '@gum-jsx/math'
-import { render_svg } from '@gum-jsx/core'
-import { render_png, has_live_text, rasterize_svg } from '@gum-jsx/png'
+import { render_png } from '@gum-jsx/png'
 import { DEFAULT_SIZE, layoutFigure, renderFigure } from './render'
 
 // Check the complete SVG render before returning success to the model.
@@ -39,9 +38,7 @@ export function registerRenderTool(server: McpServer, viewerUri: string): void {
     try {
       const fragment = layoutFigure(code, { size, fonts: createMathFonts(), theme: 'light' })
       const { width, height } = fragment.size
-      const png = has_live_text(fragment)
-        ? rasterize_svg(render_svg(fragment, { background: 'white' }), { size: fragment.size, ratio: 2 })
-        : render_png(fragment, { background: 'white', ratio: 2 })
+      const png = render_png(fragment, { background: 'white', ratio: 2 })
       return {
         content: [
           { type: 'text', text: `Rasterized gum.jsx figure (${width} × ${height}px; PNG at 2×). Inspect this image before calling render with the same code and size.` },
