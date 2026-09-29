@@ -13,7 +13,7 @@ From the workspace root:
 
 ```bash
 bun install
-bun --filter @gum-jsx/png run build
+bun --filter @gum-jsx/png build
 bun --filter @gum-jsx/mcp build
 PUBLIC_URL=http://localhost:8787 bun --filter @gum-jsx/mcp start
 ```
