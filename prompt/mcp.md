@@ -9,11 +9,14 @@ element category.
 Documentation is accessed through these tools; the file paths identify pages.
 
 Always call `rasterize` with the complete JSX source in `code` before displaying
-it, including after every revision. This tool runs the full evaluation, layout,
-SVG, and PNG pipeline on the server and returns a 2× PNG for inspection. Check
+it, including after every revision. This tool evaluates and lays out the source,
+then renders the fragment directly to a 2× PNG on the server. Check
 legibility, alignment, clipping, and overlap. Fix errors or visual problems and
 rasterize again before proceeding. If the host cannot show you the returned PNG,
 state that visual inspection is unavailable; do not claim to have checked it.
+
+Raster output requires outlined text. Emoji and other text without outlines
+return an error; use supported text or shapes when revising the figure.
 
 Call `render` with the **same code and size** only after the raster check passes
 to display the figure inline. It sends the source to a client-side viewer; a

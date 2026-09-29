@@ -12,11 +12,14 @@ getting started and the package overview.
 From the workspace root:
 
 ```bash
+bun install
+bun --filter @gum-jsx/png run build
 bun --filter @gum-jsx/mcp build
 PUBLIC_URL=http://localhost:8787 bun --filter @gum-jsx/mcp start
 ```
 
-Or, from this directory:
+After installing workspace dependencies and building `@gum-jsx/png`, you can
+build and run MCP from this directory:
 
 ```bash
 bun run build
@@ -28,6 +31,9 @@ For development, rebuild the viewer and watch the server:
 ```sh
 bun run dev
 ```
+
+Rebuild `@gum-jsx/png` after changing its source. Its build uses the checked-in
+WASM artifact and requires no Rust toolchain.
 
 Set `PUBLIC_URL` to your browser-visible origin when using a reverse proxy.
 
@@ -50,7 +56,8 @@ documentation integration checks.
 Run `bun run verify` for a real-client check. It builds fresh artifacts, starts a
 temporary loopback server, runs MCP Inspector's `tools/list`, then exercises docs,
 PNG rasterization, viewer handoff/resources, and render errors over HTTP. It
-shuts the server down on success, failure, or interruption and exits nonzero on
+starts the server with native addons disabled, shuts it down on success,
+failure, or interruption, and exits nonzero on
 failure. No separate dev server is needed. The runner pins Inspector 2.7.0;
 `bunx` downloads it on first use, and it requires Node 22.19 or newer.
 
@@ -131,7 +138,10 @@ an explicit `Svg` width for a fixed viewport. The preview scales large figures
 down to the available display width. Downloads retain the figure's SVG dimensions
 (twice those dimensions for the 2× PNG), without padding to the browser width.
 
-The app follows host theme changes and offers JSX, SVG, and 2x PNG downloads. Ordinary text is emitted as glyph paths. Emoji remain live SVG text, so their display depends on the viewer or rasterizer's available fonts.
+The app follows host theme changes and offers JSX, SVG, and 2× PNG downloads.
+Viewer PNG downloads use the browser's built-in canvas API. Ordinary text is
+emitted as glyph paths. Emoji remain live SVG text and depend on browser fonts;
+the server's `rasterize` tool requires outlines and reports an error for emoji.
 
 The app resource URI includes a hash of the viewer HTML so updated bundles have
 a distinct cache identity. Older viewer URIs remain readable for clients with

@@ -36,7 +36,7 @@ async function verify(): Promise<number> {
   const built = await run([process.execPath, 'run', 'build'])
   if (built !== 0 || interrupted) return interrupted || built
 
-  const server = Bun.spawn([process.execPath, 'src/server.ts'], {
+  const server = Bun.spawn([process.execPath, '--no-addons', 'src/server.ts'], {
     cwd: ROOT,
     env: { ...process.env, PORT: '0', HOST: '127.0.0.1', PUBLIC_URL: 'http://127.0.0.1' },
     stdin: 'ignore', stdout: 'pipe', stderr: 'inherit',
