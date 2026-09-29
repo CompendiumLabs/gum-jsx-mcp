@@ -23,6 +23,7 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "fast-png": "^8.0.0",
     "@types/bun": "latest",
     "typescript": "^7"
   }

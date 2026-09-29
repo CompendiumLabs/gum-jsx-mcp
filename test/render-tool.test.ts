@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
-import { rasterize_pixels } from '@gum-jsx/png'
+import { decode } from 'fast-png'
 import { registerRenderTool } from '../src/render-tool'
 
 async function withClient(run: (client: Client) => Promise<void>): Promise<void> {
@@ -33,7 +33,7 @@ test('rasterize returns a painted PNG before render hands the source to the view
     const png = Buffer.from(image.data, 'base64')
     expect([...png.subarray(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10])
     expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([80, 40])
-    const pixels = rasterize_pixels(png)
+    const pixels = decode(png)
     expect([...pixels.data.slice(4 * (20 * 80 + 40), 4 * (20 * 80 + 40) + 4)]).toEqual([255, 0, 0, 255])
     const display = await client.callTool({ name: 'render', arguments: args })
     expect(display.isError).not.toBe(true)
@@ -60,6 +60,19 @@ test('scalar dash patterns and named font weights survive full rasterization', a
     const images = (result: typeof scalar) => (result.content as { type: string }[]).filter(item => item.type === 'image')
     expect(images(scalar)).toHaveLength(1)
     expect(images(scalar)).toEqual(images(array))
+  })
+})
+
+test('rasterize paints white behind transparent geometry and retains fractional dimensions', async () => {
+  await withClient(async client => {
+    const result = await client.callTool({ name: 'rasterize', arguments: {
+      code: '<Rect width="8.25px" height="4.25px" fill="none" stroke={none} />',
+    } })
+    expect(result.isError).not.toBe(true)
+    const image = (result.content as { type: string; data: string }[]).find(item => item.type === 'image')!
+    const png = decode(Buffer.from(image.data, 'base64'))
+    expect([png.width, png.height]).toEqual([17, 9])
+    expect([...png.data.slice(0, 4)]).toEqual([255, 255, 255, 255])
   })
 })
 

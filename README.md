@@ -113,7 +113,11 @@ refresh their configuration to remove that stale import and use the docs tools.
 Always call `rasterize` and inspect its PNG before `render`, including after
 revisions. Raster errors return `isError: true` with the cause. The PNG uses 2×
 resolution, a light root theme, and a white background, matching downloads.
-Rasterization uses `@gum-jsx/png` and its native `canvas` dependency.
+Rasterization passes the laid-out fragment to `@gum-jsx/png` and tiny-skia
+WebAssembly. Outlined text, math, shapes, and embedded PNGs need no native addons
+or install scripts. Figures containing live text or emoji use the optional
+`canvas` package and its host fonts; install it and allow its native install
+script to enable that fallback. Missing canvas produces an actionable tool error.
 
 The viewer follows the same pipeline as the current CLI and editor:
 

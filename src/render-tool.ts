@@ -2,8 +2,9 @@ import { z } from 'zod'
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { registerAppTool } from '@modelcontextprotocol/ext-apps/server'
 import { createMathFonts } from '@gum-jsx/math'
-import { rasterize_svg } from '@gum-jsx/png'
-import { DEFAULT_SIZE, renderFigure } from './render'
+import { render_svg } from '@gum-jsx/core'
+import { render_png, has_live_text, rasterize_svg } from '@gum-jsx/png'
+import { DEFAULT_SIZE, layoutFigure, renderFigure } from './render'
 
 // Check the complete SVG render before returning success to the model.
 // Local font URLs load synchronously through the core font provider.
@@ -31,17 +32,20 @@ const inputSchema = {
 export function registerRenderTool(server: McpServer, viewerUri: string): void {
   server.registerTool('rasterize', {
     title: 'Test gum.jsx figure as PNG',
-    description: 'Evaluate, lay out, serialize, and rasterize gum.jsx on the server. Returns a 2× PNG for visual inspection, or an actionable error. Always call this before render, including after revisions. Inspect the PNG for legibility, clipping, overlap, and alignment; then call render with the same code and size to display the checked figure. Uses a light root theme and white background, matching viewer downloads.',
+    description: 'Evaluate, lay out, and rasterize gum.jsx on the server. Returns a 2× PNG for visual inspection, or an actionable error. Always call this before render, including after revisions. Inspect the PNG for legibility, clipping, overlap, and alignment; then call render with the same code and size to display the checked figure. Uses a light root theme and white background, matching viewer downloads.',
     inputSchema,
     annotations: { readOnlyHint: true, openWorldHint: false },
   }, async ({ code, size = DEFAULT_SIZE }) => {
     try {
-      const figure = renderFigure(code, { size, fonts: createMathFonts(), theme: 'light', background: 'white' })
-      const png = rasterize_svg(figure.markup, { size: figure, ratio: 2 })
+      const fragment = layoutFigure(code, { size, fonts: createMathFonts(), theme: 'light' })
+      const { width, height } = fragment.size
+      const png = has_live_text(fragment)
+        ? rasterize_svg(render_svg(fragment, { background: 'white' }), { size: fragment.size, ratio: 2 })
+        : render_png(fragment, { background: 'white', ratio: 2 })
       return {
         content: [
-          { type: 'text', text: `Rasterized gum.jsx figure (${figure.width} × ${figure.height}px; PNG at 2×). Inspect this image before calling render with the same code and size.` },
-          { type: 'image', mimeType: 'image/png', data: png.toString('base64') },
+          { type: 'text', text: `Rasterized gum.jsx figure (${width} × ${height}px; PNG at 2×). Inspect this image before calling render with the same code and size.` },
+          { type: 'image', mimeType: 'image/png', data: Buffer.from(png).toString('base64') },
         ],
       }
     } catch (error) {
