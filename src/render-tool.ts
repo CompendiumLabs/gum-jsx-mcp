@@ -16,22 +16,22 @@ function checkCode(code: string, size: number): string | null {
   }
 }
 
-const RENDER_DESCRIPTION = `Display a gum.jsx figure in the client viewer. First call rasterize with the same code and size, inspect the returned PNG, and fix any errors or visual problems. Repeat the raster check after every revision.
+const RENDER_DESCRIPTION = `Display a Gum figure in the client viewer. First call rasterize with the same code and size, inspect the returned PNG, and fix any errors or visual problems. Repeat the raster check after every revision.
 
-gum.jsx is a JSX language for SVG figures. Code may be one JSX expression, or JavaScript statements and helper components ending in \`return <.../>\`. The server instructions introduce the language; list_docs and read_docs provide current guides, element references, and gallery examples.
+Gum is a JSX language for SVG figures. Code may be one JSX expression, or JavaScript statements and helper components ending in \`return <.../>\`. The server instructions introduce the language; list_docs and read_docs provide current guides, element references, and gallery examples.
 
 The figure is drawn interactively in the conversation. The tool returns its code, or an actionable evaluation, layout, or SVG rendering error. Server validation does not confirm browser display; viewer errors mean the figure was not displayed successfully.`
 
 const inputSchema = {
-  code: z.string().describe('gum.jsx source code for the figure'),
+  code: z.string().describe('Gum source code for the figure'),
   size: z.number().int().positive().optional()
     .describe(`available layout width in pixels (default ${DEFAULT_SIZE}); compact figures hug content and authored dimensions are preserved`),
 }
 
 export function registerRenderTool(server: McpServer, viewerUri: string): void {
   server.registerTool('rasterize', {
-    title: 'Test gum.jsx figure as PNG',
-    description: 'Evaluate, lay out, and rasterize gum.jsx on the server. Returns a 2× PNG for visual inspection, or an actionable error. Always call this before render, including after revisions. Inspect the PNG for legibility, clipping, overlap, and alignment; then call render with the same code and size to display the checked figure. Uses a light root theme and white background, matching viewer downloads.',
+    title: 'Test Gum figure as PNG',
+    description: 'Evaluate, lay out, and rasterize Gum on the server. Returns a 2× PNG for visual inspection, or an actionable error. Always call this before render, including after revisions. Inspect the PNG for legibility, clipping, overlap, and alignment; then call render with the same code and size to display the checked figure. Uses a light root theme and white background, matching viewer downloads.',
     inputSchema,
     annotations: { readOnlyHint: true, openWorldHint: false },
   }, async ({ code, size = DEFAULT_SIZE }) => {
@@ -41,20 +41,20 @@ export function registerRenderTool(server: McpServer, viewerUri: string): void {
       const png = render_png(fragment, { background: 'white', ratio: 2 })
       return {
         content: [
-          { type: 'text', text: `Rasterized gum.jsx figure (${width} × ${height}px; PNG at 2×). Inspect this image before calling render with the same code and size.` },
+          { type: 'text', text: `Rasterized Gum figure (${width} × ${height}px; PNG at 2×). Inspect this image before calling render with the same code and size.` },
           { type: 'image', mimeType: 'image/png', data: Buffer.from(png).toString('base64') },
         ],
       }
     } catch (error) {
       return {
         isError: true,
-        content: [{ type: 'text', text: `gum.jsx rasterization failed:\n${error instanceof Error ? error.message : String(error)}` }],
+        content: [{ type: 'text', text: `Gum rasterization failed:\n${error instanceof Error ? error.message : String(error)}` }],
       }
     }
   })
 
   registerAppTool(server, 'render', {
-    title: 'Render gum.jsx figure',
+    title: 'Render Gum figure',
     description: RENDER_DESCRIPTION,
     inputSchema,
     annotations: { readOnlyHint: true, openWorldHint: false },
@@ -67,12 +67,12 @@ export function registerRenderTool(server: McpServer, viewerUri: string): void {
     if (error != null) {
       return {
         isError: true,
-        content: [{ type: 'text', text: `gum.jsx rendering failed:\n${error}` }],
+        content: [{ type: 'text', text: `Gum rendering failed:\n${error}` }],
         structuredContent: { code, size, error },
       }
     }
     return {
-      content: [{ type: 'text', text: `gum.jsx SVG validated on the server and sent to the viewer (${size}px width offer). Browser display is not yet confirmed.` }],
+      content: [{ type: 'text', text: `Gum SVG validated on the server and sent to the viewer (${size}px width offer). Browser display is not yet confirmed.` }],
       structuredContent: { code, size },
     }
   })

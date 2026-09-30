@@ -38,7 +38,7 @@ test('rasterize returns a painted PNG before render hands the source to the view
     const display = await client.callTool({ name: 'render', arguments: args })
     expect(display.isError).not.toBe(true)
     expect(display.structuredContent).toEqual(args)
-    expect(JSON.stringify(display.content)).not.toContain('Rendered gum.jsx figure')
+    expect(JSON.stringify(display.content)).not.toContain('Rendered Gum figure')
   })
 })
 

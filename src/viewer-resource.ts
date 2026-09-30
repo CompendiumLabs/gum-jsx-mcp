@@ -20,7 +20,7 @@ export function registerViewer(server: McpServer, html: string, publicOrigin: st
   }
   const config = {
     title: 'gum viewer',
-    description: 'Renders gum.jsx code as an SVG figure',
+    description: 'Renders Gum code as an SVG figure',
     mimeType: RESOURCE_MIME_TYPE,
     _meta: meta,
   }

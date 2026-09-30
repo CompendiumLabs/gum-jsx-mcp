@@ -1,4 +1,4 @@
-// MCP App viewer: evaluate, lay out, and serialize gum.jsx in the host iframe.
+// MCP App viewer: evaluate, lay out, and serialize Gum in the host iframe.
 
 import { App, applyHostStyleVariables } from '@modelcontextprotocol/ext-apps'
 import type { McpUiHostContext, McpUiTheme } from '@modelcontextprotocol/ext-apps'
