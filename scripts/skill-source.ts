@@ -16,7 +16,7 @@ const LOCAL_PROMPT_DIR = join(import.meta.dir, '..', 'prompt')
 const elements = getElements()
 const guides = getGuides()
 const gallery = getGallery()
-const files = buildSkillFiles({ cli: false })
+const files = buildSkillFiles({ gen: false, cli: false })
 // Tool-returned links use paths relative to the generated SKILL.md. The
 // file and fragment identify the read_docs page; on-disk files keep relative links.
 function referenceLinks(markdown: string, file: string): string {

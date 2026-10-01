@@ -20,17 +20,18 @@ function links(markdown: string): string[] {
 
 test('MCP shares the portable authoring examples without its shell workflow', () => {
   const portable = buildSkillFiles().get('SKILL.md')!
-  // CLI-only deck/prelude examples are excluded along with the shell workflow.
-  const shared = buildSkillFiles({ cli: false }).get('SKILL.md')!
+  // CLI setup, refinement, and deck/prelude examples are excluded.
+  const shared = buildSkillFiles({ gen: false, cli: false }).get('SKILL.md')!
   expect(examples(INSTRUCTIONS)).toEqual(examples(shared))
-  expect(examples(INSTRUCTIONS).length).toBeGreaterThanOrEqual(3)
+  expect(examples(INSTRUCTIONS).length).toBeGreaterThan(0)
   expect(portable).toMatch(/^```sh\n/m)
   expect(INSTRUCTIONS).not.toMatch(/^```(?:sh|bash)\n/m)
   expect(INSTRUCTIONS).not.toContain('@gum-jsx/cli')
+  expect(INSTRUCTIONS).not.toContain('gum figure.jsx')
 
   // All shared advice survives adaptation; only documentation URLs change.
   const withoutLinks = (text: string) => text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-  expect(withoutLinks(INSTRUCTIONS)).toStartWith(withoutLinks(getSkillPrompt()).trim())
+  expect(withoutLinks(INSTRUCTIONS)).toStartWith(withoutLinks(getSkillPrompt({ gen: false })).trim())
 })
 
 test('shared instruction examples render through the MCP figure pipeline', () => {
